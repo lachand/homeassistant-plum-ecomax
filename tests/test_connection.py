@@ -9,7 +9,6 @@ from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.entity import DeviceInfo
 from pyplumio.connection import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
@@ -17,7 +16,6 @@ from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
 from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 import pytest
 
-from custom_components.plum_ecomax.climate import ATTR_THERMOSTATS
 from custom_components.plum_ecomax.connection import (
     DEFAULT_TIMEOUT,
     EcomaxConnection,
@@ -27,6 +25,7 @@ from custom_components.plum_ecomax.connection import (
 from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_REGDATA,
+    ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     CONF_HOST,
     CONF_MODEL,
@@ -37,9 +36,7 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
-    DOMAIN,
     ECOMAX,
-    MANUFACTURER,
 )
 
 SOURCE_IP: Final = "1.1.1.1"
@@ -130,14 +127,6 @@ async def test_async_setup(
     assert connection.connection == mock_connection
     assert connection.product_type == tcp_config_data.get(CONF_PRODUCT_TYPE)
     assert connection.product_id == tcp_config_data.get(CONF_PRODUCT_ID)
-    assert connection.device_info == DeviceInfo(
-        name=connection.name,
-        identifiers={(DOMAIN, connection.uid)},
-        manufacturer=MANUFACTURER,
-        model=f"{connection.model}",
-        sw_version=connection.software,
-        configuration_url=f"http://{tcp_config_data.get(CONF_HOST)}",
-    )
 
     # Check with device timeout.
     with pytest.raises(asyncio.TimeoutError):

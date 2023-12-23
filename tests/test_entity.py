@@ -3,10 +3,18 @@
 import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
-from homeassistant.helpers.entity import EntityDescription
+from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.filters import Filter
 
+from custom_components.plum_ecomax.const import (
+    CONF_CONNECTION_TYPE,
+    CONNECTION_TYPE_SERIAL,
+    CONNECTION_TYPE_TCP,
+    DOMAIN,
+    MANUFACTURER,
+    MODULE_A,
+)
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
@@ -24,7 +32,7 @@ class _TestEntity(EcomaxEntity):
 @patch("custom_components.plum_ecomax.entity.EcomaxEntity.connection")
 @patch.object(_TestEntity, "async_update")
 async def test_base_entity(
-    mock_async_update, mock_connection, ecomax_p: EcoMAX
+    mock_async_update, mock_connection, ecomax_p: EcoMAX, tcp_config_data
 ) -> None:
     """Test base entity."""
     entity = _TestEntity()
@@ -66,8 +74,28 @@ async def test_base_entity(
     assert entity.available
     mock_connection.reset_mock()
 
-    # Test device info property.
-    assert entity.device_info == mock_connection.device_info
+    # Test device info property with serial connection.
+    mock_connection.entry.data = tcp_config_data
+    mock_connection.entry.data[CONF_CONNECTION_TYPE] = CONNECTION_TYPE_SERIAL
+    assert entity.device_info == DeviceInfo(
+        name=mock_connection.name,
+        identifiers={(DOMAIN, mock_connection.uid)},
+        manufacturer=MANUFACTURER,
+        model=mock_connection.model,
+        sw_version=mock_connection.software[MODULE_A],
+        configuration_url=None,
+    )
+
+    # Test device info property with tcp connection.
+    mock_connection.entry.data[CONF_CONNECTION_TYPE] = CONNECTION_TYPE_TCP
+    assert entity.device_info == DeviceInfo(
+        name=mock_connection.name,
+        identifiers={(DOMAIN, mock_connection.uid)},
+        manufacturer=MANUFACTURER,
+        model=mock_connection.model,
+        sw_version=mock_connection.software[MODULE_A],
+        configuration_url="http://localhost",
+    )
 
     # Test unique id property.
     mock_connection.uid = "test_uid"

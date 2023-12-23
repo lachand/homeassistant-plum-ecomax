@@ -10,7 +10,17 @@ from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 
 from .connection import EcomaxConnection
-from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
+from .const import (
+    ATTR_MIXERS,
+    ATTR_THERMOSTATS,
+    CONF_CONNECTION_TYPE,
+    CONF_HOST,
+    CONNECTION_TYPE_TCP,
+    DOMAIN,
+    ECOSTER,
+    MANUFACTURER,
+    MODULE_A,
+)
 
 
 class EcomaxEntity(ABC):
@@ -48,7 +58,16 @@ class EcomaxEntity(ABC):
     @property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
-        return self.connection.device_info
+        return DeviceInfo(
+            name=self.connection.name,
+            identifiers={(DOMAIN, self.connection.uid)},
+            manufacturer=MANUFACTURER,
+            model=self.connection.model,
+            sw_version=self.connection.software[MODULE_A],
+            configuration_url=f"http://{self.connection.entry.data[CONF_HOST]}"
+            if self.connection.entry.data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP
+            else None,
+        )
 
     @property
     def available(self) -> bool:
@@ -97,6 +116,38 @@ class EcomaxEntity(ABC):
         """Update entity state."""
 
 
+class ThermostatEntity(EcomaxEntity):
+    """Represents a thermostat entity."""
+
+    index: int
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID."""
+        return (
+            f"{self.connection.uid}-thermostat-"
+            + f"{self.index}-{self.entity_description.key}"
+        )
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return DeviceInfo(
+            name=f"{self.connection.name} Thermostat {self.index + 1}",
+            identifiers={(DOMAIN, f"{self.connection.uid}-thermostat-{self.index}")},
+            manufacturer=MANUFACTURER,
+            model=f"{self.connection.model} (Thermostat {self.index + 1})",
+            sw_version=self.connection.software[ECOSTER],
+            via_device=(DOMAIN, self.connection.uid),
+        )
+
+    @final
+    @property
+    def device(self) -> Mixer:
+        """Return the mixer handler."""
+        return self.connection.device.data[ATTR_THERMOSTATS][self.index]
+
+
 class MixerEntity(EcomaxEntity):
     """Represents a mixer entity."""
 
@@ -104,7 +155,7 @@ class MixerEntity(EcomaxEntity):
 
     @property
     def unique_id(self) -> str:
-        """Return a unique ID."""
+        """Return the unique ID."""
         return (
             f"{self.connection.uid}-mixer-"
             + f"{self.index}-{self.entity_description.key}"
@@ -127,7 +178,7 @@ class MixerEntity(EcomaxEntity):
             identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.index}")},
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model} ({self.device_name} {self.index + 1})",
-            sw_version=self.connection.software,
+            sw_version=self.connection.software[MODULE_A],
             via_device=(DOMAIN, self.connection.uid),
         )
 

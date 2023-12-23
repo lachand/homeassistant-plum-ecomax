@@ -30,6 +30,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_TO,
     CONF_CAPABILITIES,
     CONF_PRODUCT_ID,
+    CONF_SOFTWARE,
     CONF_SUB_DEVICES,
     DOMAIN,
     EVENT_PLUM_ECOMAX_ALERT,
@@ -162,8 +163,8 @@ async def test_migrate_entry_v1_2_to_v7(
     data = dict(config_entry.data)
     assert CONF_CAPABILITIES not in data
     assert CONF_SUB_DEVICES in data
-    assert config_entry.version == 7
-    assert "Migration to version 7 successful" in caplog.text
+    assert config_entry.version == 8
+    assert "Migration to version 8 successful" in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -176,8 +177,8 @@ async def test_migrate_entry_v3_to_v7(
     hass.config_entries.async_update_entry(config_entry, data=data)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
-    assert config_entry.version == 7
-    assert "Migration to version 7 successful" in caplog.text
+    assert config_entry.version == 8
+    assert "Migration to version 8 successful" in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -193,8 +194,8 @@ async def test_migrate_entry_v4_5_to_v6(
     data = dict(config_entry.data)
     assert CONF_CAPABILITIES not in data
     assert CONF_SUB_DEVICES in data
-    assert config_entry.version == 7
-    assert "Migration to version 7 successful" in caplog.text
+    assert config_entry.version == 8
+    assert "Migration to version 8 successful" in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_860p3_o")
@@ -207,8 +208,29 @@ async def test_migrate_entry_v6_to_v7(
     data = dict(config_entry.data)
     assert CONF_PRODUCT_ID in data
     assert data[CONF_PRODUCT_ID] == 51
-    assert config_entry.version == 7
-    assert "Migration to version 7 successful" in caplog.text
+    assert config_entry.version == 8
+    assert "Migration to version 8 successful" in caplog.text
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_migrate_entry_v7_to_v8(
+    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+) -> None:
+    """Test migrating entry from version 7 to version 8."""
+    config_entry.version = 7
+    assert await async_migrate_entry(hass, config_entry)
+    data = dict(config_entry.data)
+    assert CONF_SOFTWARE in data
+    assert data[CONF_SOFTWARE] == {
+        "module_a": "6.10.32.K1",
+        "module_b": None,
+        "module_c": None,
+        "ecolambda": "0.8.0",
+        "ecoster": None,
+        "panel": "6.30.36",
+    }
+    assert config_entry.version == 8
+    assert "Migration to version 8 successful" in caplog.text
 
 
 async def test_migrate_entry_with_timeout(

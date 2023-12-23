@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import suppress
+from dataclasses import asdict
 import logging
 from typing import Final
 
@@ -28,12 +29,14 @@ from .connection import (
 )
 from .const import (
     ATTR_FROM,
+    ATTR_MODULES,
     ATTR_PRODUCT,
     ATTR_TO,
     CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
+    CONF_SOFTWARE,
     CONF_SUB_DEVICES,
     DEFAULT_CONNECTION_TYPE,
     DOMAIN,
@@ -171,6 +174,11 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_ID] = product.id
             config_entry.version = 7
+
+        if config_entry.version == 7:
+            modules = await device.get(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
+            data[CONF_SOFTWARE] = asdict(modules)
+            config_entry.version = 8
 
         hass.config_entries.async_update_entry(config_entry, data=data)
         await connection.close()

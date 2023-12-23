@@ -1,9 +1,10 @@
 """Platform for climate integration."""
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 import logging
-from typing import Final, Literal, overload
+from typing import Any, Final, Literal, overload
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -25,13 +26,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import on_change, throttle
 from pyplumio.structures.thermostat_parameters import ThermostatParameter
 
 from .connection import EcomaxConnection
-from .const import ATTR_THERMOSTATS, DOMAIN
-from .entity import EcomaxEntity
+from .const import DOMAIN
+from .entity import ThermostatEntity
 
 TEMPERATURE_STEP: Final = 0.1
 
@@ -77,15 +77,13 @@ CLIMATE_MODES: Final[list[str]] = [
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, slots=True)
-class EcomaxClimateEntityDescription(ClimateEntityDescription):
-    """Describes an ecoMAX climate entity."""
-
-    index: int
+@dataclass(slots=True)
+class ThermostatClimateEntityDescription(ClimateEntityDescription):
+    """Describes an thermostat climate entity."""
 
 
-class EcomaxClimate(EcomaxEntity, ClimateEntity):
-    """Represents an ecoMAX climate entity."""
+class ThermostatClimate(ThermostatEntity, ClimateEntity):
+    """Represents an thermostat climate entity."""
 
     _attr_current_temperature: float | None = None
     _attr_entity_registry_enabled_default: bool
@@ -102,10 +100,11 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     _attr_target_temperature_name: str | None
     _attr_target_temperature_step: float | None
     _attr_temperature_unit: str
+    _callbacks: dict[str, Callable[[Any], Awaitable[Any]]]
     _connection: EcomaxConnection
     entity_description: EntityDescription
 
-    def __init__(self, connection: EcomaxConnection, thermostat: Thermostat):
+    def __init__(self, connection: EcomaxConnection, index: int):
         """Initialize a new ecoMAX climate entity."""
         self._attr_current_temperature = None
         self._attr_entity_registry_enabled_default = True
@@ -125,11 +124,17 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self._attr_target_temperature_step = TEMPERATURE_STEP
         self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._connection = connection
-        self.entity_description = EcomaxClimateEntityDescription(
-            key=f"thermostat-{thermostat.index}",
-            translation_key="ecomax_climate",
-            index=thermostat.index,
+        self._callbacks = {
+            "mode": on_change(self.async_update_preset_mode),
+            "state": on_change(self.async_update_preset_mode),
+            "contacts": on_change(self.async_update_hvac_action),
+            "current_temp": throttle(on_change(self.async_update), seconds=10),
+            "target_temp": on_change(self.async_update_target_temperature),
+        }
+        self.entity_description = ThermostatClimateEntityDescription(
+            key="thermostat", translation_key="thermostat"
         )
+        self.index = index
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
@@ -188,28 +193,17 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def async_added_to_hass(self):
         """Subscribe to thermostat events."""
-        callbacks = {
-            "mode": on_change(self.async_update_preset_mode),
-            "state": on_change(self.async_update_preset_mode),
-            "contacts": on_change(self.async_update_hvac_action),
-            "current_temp": throttle(on_change(self.async_update), seconds=10),
-            "target_temp": on_change(self.async_update_target_temperature),
-        }
-
-        for name, func in callbacks.items():
+        for name, callback in self._callbacks.items():
             # Feed initial value to the callback function.
             if name in self.device.data:
-                await func(self.device.data[name])
+                await callback(self.device.data[name])
 
-            self.device.subscribe(name, func)
+            self.device.subscribe(name, callback)
 
     async def async_will_remove_from_hass(self):
         """Unsubscribe from thermostat events."""
-        self.device.unsubscribe("mode", self.async_update_preset_mode)
-        self.device.unsubscribe("state", self.async_update_preset_mode)
-        self.device.unsubscribe("contacts", self.async_update_hvac_action)
-        self.device.unsubscribe("current_temp", self.async_update)
-        self.device.unsubscribe("target_temp", self.async_update_target_temperature)
+        for name, callback in self._callbacks.items():
+            self.device.unsubscribe(name, callback)
 
     async def _async_update_target_temperature_attributes(
         self, target_temp: float | None = None
@@ -260,13 +254,6 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         return PRESET_UNKNOWN
 
     @property
-    def device(self) -> Thermostat:
-        """Return the thermostat object."""
-        return self.connection.device.data[ATTR_THERMOSTATS][
-            self.entity_description.index
-        ]
-
-    @property
     def target_temperature_name(self) -> str | None:
         """Return the target temperature name."""
         return self._attr_target_temperature_name
@@ -283,8 +270,8 @@ async def async_setup_entry(
 
     if connection.has_thermostats and await connection.async_setup_thermostats():
         return async_add_entities(
-            EcomaxClimate(connection, thermostat)
-            for thermostat in connection.device.thermostats.values()
+            ThermostatClimate(connection, index)
+            for index in connection.device.thermostats
         )
 
     return False
