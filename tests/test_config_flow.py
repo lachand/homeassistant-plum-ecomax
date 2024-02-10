@@ -31,6 +31,7 @@ from custom_components.plum_ecomax.const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
+    Module,
 )
 
 
@@ -136,12 +137,12 @@ async def test_form_tcp(
         CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
         CONF_PRODUCT_ID: 4,
         CONF_SOFTWARE: {
-            "module_a": "6.10.32.K1",
-            "module_b": None,
-            "module_c": None,
-            "ecolambda": "0.8.0",
-            "ecoster": None,
-            "panel": "6.30.36",
+            Module.A: "6.10.32.K1",
+            Module.B: None,
+            Module.C: None,
+            Module.ECOLAMBDA: "0.8.0",
+            Module.ECOSTER: None,
+            Module.PANEL: "6.30.36",
         },
         CONF_SUB_DEVICES: ["water_heater"],
     }
@@ -236,12 +237,12 @@ async def test_form_serial(
         CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
         CONF_PRODUCT_ID: 4,
         CONF_SOFTWARE: {
-            "module_a": "6.10.32.K1",
-            "module_b": None,
-            "module_c": None,
-            "ecolambda": "0.8.0",
-            "ecoster": None,
-            "panel": "6.30.36",
+            Module.A: "6.10.32.K1",
+            Module.B: None,
+            Module.C: None,
+            Module.ECOLAMBDA: "0.8.0",
+            Module.ECOSTER: None,
+            Module.PANEL: "6.30.36",
         },
         CONF_SUB_DEVICES: ["water_heater"],
     }

@@ -15,7 +15,7 @@ from custom_components.plum_ecomax.const import (
     CONNECTION_TYPE_TCP,
     DOMAIN,
     MANUFACTURER,
-    MODULE_A,
+    Module,
 )
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
@@ -79,7 +79,7 @@ async def test_base_entity(
         identifiers={(DOMAIN, mock_connection.uid)},
         manufacturer=MANUFACTURER,
         model=mock_connection.model,
-        sw_version=mock_connection.software[MODULE_A],
+        sw_version=mock_connection.software[Module.A],
         configuration_url=None,
     )
 
@@ -90,7 +90,7 @@ async def test_base_entity(
         identifiers={(DOMAIN, mock_connection.uid)},
         manufacturer=MANUFACTURER,
         model=mock_connection.model,
-        sw_version=mock_connection.software[MODULE_A],
+        sw_version=mock_connection.software[Module.A],
         configuration_url="http://localhost",
     )
 

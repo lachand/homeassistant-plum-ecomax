@@ -23,7 +23,6 @@ from custom_components.plum_ecomax.connection import (
 )
 from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
-    ATTR_REGDATA,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     CONF_HOST,
@@ -35,7 +34,8 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
-    ECOMAX,
+    REGDATA,
+    Device,
 )
 
 SOURCE_IP: Final = "1.1.1.1"
@@ -111,7 +111,7 @@ async def test_async_setup(
     assert exc_info.value.translation_placeholders == {"device": "ecoMAX 850P2-C"}
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
-    mock_connection.get.assert_awaited_once_with(ECOMAX, timeout=DEFAULT_TIMEOUT)
+    mock_connection.get.assert_awaited_once_with(Device.ECOMAX, timeout=DEFAULT_TIMEOUT)
 
     # Check connection class properties for tcp connection.
     assert not hasattr(connection, "nonexistent")
@@ -186,7 +186,7 @@ async def test_async_setup_regdata(
 
     assert "Timed out while trying to setup regulator data" in caplog.text
     mock_device.request.assert_any_await(
-        ATTR_REGDATA,
+        REGDATA,
         FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
         retries=5,
         timeout=DEFAULT_TIMEOUT,

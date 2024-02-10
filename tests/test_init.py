@@ -33,6 +33,7 @@ from custom_components.plum_ecomax.const import (
     CONF_SUB_DEVICES,
     DOMAIN,
     EVENT_PLUM_ECOMAX_ALERT,
+    Module,
 )
 
 DATE_FROM: Final = "2012-12-12 00:00:00"
@@ -223,12 +224,12 @@ async def test_migrate_entry_v7_to_v8(
     data = dict(config_entry.data)
     assert CONF_SOFTWARE in data
     assert data[CONF_SOFTWARE] == {
-        "module_a": "6.10.32.K1",
-        "module_b": None,
-        "module_c": None,
-        "ecolambda": "0.8.0",
-        "ecoster": None,
-        "panel": "6.30.36",
+        Module.A: "6.10.32.K1",
+        Module.B: None,
+        Module.C: None,
+        Module.ECOLAMBDA: "0.8.0",
+        Module.ECOSTER: None,
+        Module.PANEL: "6.30.36",
     }
     assert config_entry.version == 8
     assert "Migration to version 8 successful" in caplog.text

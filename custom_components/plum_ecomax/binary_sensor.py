@@ -11,6 +11,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -20,7 +21,7 @@ from pyplumio.filters import on_change
 from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN, MODULE_A
+from .const import ALL, DOMAIN, Device, Module
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
     icon_off: str | None = None
-    module: str = MODULE_A
+    module: str = Module.A
 
 
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
@@ -240,6 +241,31 @@ def async_setup_ecomax_binary_sensors(
     ]
 
 
+def async_setup_ecomax_user_binary_sensors(
+    connection: EcomaxConnection,
+    config_entry: ConfigType,
+) -> list[EcomaxBinarySensor]:
+    """Set up user-defined ecoMAX binary sensors."""
+    entities = config_entry.options.get("entities", {})
+    return [
+        EcomaxBinarySensor(connection, description)
+        for description in (
+            EcomaxBinarySensorEntityDescription(
+                key=description["key"],
+                name=description["name"],
+                device_class=(
+                    BinarySensorDeviceClass(description["device_class"])
+                    if "device_class" in description
+                    else None
+                ),
+                value_fn=lambda x: x,
+            )
+            for description in entities.get(Platform.BINARY_SENSOR, [])
+            if description["source_device"] == Device.ECOMAX
+        )
+    ]
+
+
 def async_setup_mixer_binary_sensors(
     connection: EcomaxConnection,
 ) -> list[MixerBinarySensor]:
@@ -258,6 +284,34 @@ def async_setup_mixer_binary_sensors(
     return entities
 
 
+def async_setup_mixer_user_binary_sensors(
+    connection: EcomaxConnection,
+    config_entry: ConfigType,
+) -> list[MixerBinarySensor]:
+    """Set up user-defined mixer binary sensors."""
+    entities = config_entry.options.get("entities", {})
+    return [
+        MixerBinarySensor(connection, description, index)
+        for description, index in (
+            (
+                MixerBinarySensorEntityDescription(
+                    key=description["key"],
+                    name=description["name"],
+                    device_class=(
+                        BinarySensorDeviceClass(description["device_class"])
+                        if "device_class" in description
+                        else None
+                    ),
+                    value_fn=lambda x: x,
+                ),
+                int(description["source_device"].split("_", 1).pop()),
+            )
+            for description in entities.get(Platform.BINARY_SENSOR, [])
+            if description["source_device"].startswith(Device.MIXER)
+        )
+    ]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
@@ -271,10 +325,12 @@ async def async_setup_entry(
 
     # Add ecoMAX binary sensors.
     entities.extend(async_setup_ecomax_binary_sensors(connection))
+    entities.extend(async_setup_ecomax_user_binary_sensors(connection, config_entry))
 
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
         entities.extend(async_setup_mixer_binary_sensors(connection))
+        entities.extend(async_setup_mixer_user_binary_sensors(connection, config_entry))
 
     async_add_entities(entities)
     return True

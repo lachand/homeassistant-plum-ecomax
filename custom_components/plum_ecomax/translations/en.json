@@ -1,10 +1,10 @@
 {
   "config": {
     "abort": {
-      "unsupported_product": "Connected device is not supported",
+      "already_configured": "Device is already configured",
       "discovery_failed": "Could not finish module discovery",
       "no_devices_found": "No devices found on the network",
-      "already_configured": "Device is already configured"
+      "unsupported_product": "Connected device is not supported."
     },
     "error": {
       "cannot_connect": "Failed to connect",
@@ -13,50 +13,78 @@
     },
     "progress": {
       "identify_device": "Checking the device model...",
-      "discover_modules": "Discovering modules for the {model}..."
+      "wait_for_device": "Establishing connection to the device..."
     },
     "step": {
-      "user": {
-        "title": "Choose a connection type",
-        "menu_options": {
-          "tcp": "Connect via network (TCP)",
-          "serial": "Connect via serial (RS-485)"
-        }
-      },
       "serial": {
-        "title": "Serial settings",
         "data": {
-          "device": "Device",
-          "baudrate": "Baudrate"
-        }
+          "baudrate": "Baudrate",
+          "device": "Device"
+        },
+        "title": "Serial settings"
       },
       "tcp": {
-        "title": "Network settings",
         "data": {
           "host": "Host",
           "port": "Port"
-        }
+        },
+        "title": "Network settings"
+      },
+      "user": {
+        "menu_options": {
+          "serial": "Connect via serial (RS-485)",
+          "tcp": "Connect via network (TCP)"
+        },
+        "title": "Choose a connection type"
       }
     }
   },
   "entity": {
     "binary_sensor": {
-      "heating_pump": { "name": "Heating pump" },
-      "water_heater_pump": { "name": "Water heater pump" },
-      "circulation_pump": { "name": "Circulation pump" },
-      "alert": { "name": "Alert" },
-      "connection_status": { "name": "Connection status" },
-      "fan": { "name": "Fan" },
-      "exhaust_fan": { "name": "Exhaust fan" },
-      "feeder": { "name": "Feeder" },
-      "lighter": { "name": "Lighter" },
-      "solar_pump": { "name": "Solar pump" },
-      "fireplace_pump": { "name": "Fireplace pump" },
-      "mixer_pump": { "name": "Mixer pump" },
-      "circuit_pump": { "name": "Circuit pump" }
+      "alert": {
+        "name": "Alert"
+      },
+      "circuit_pump": {
+        "name": "Circuit pump"
+      },
+      "circulation_pump": {
+        "name": "Circulation pump"
+      },
+      "connection_status": {
+        "name": "Connection status"
+      },
+      "exhaust_fan": {
+        "name": "Exhaust fan"
+      },
+      "fan": {
+        "name": "Fan"
+      },
+      "feeder": {
+        "name": "Feeder"
+      },
+      "fireplace_pump": {
+        "name": "Fireplace pump"
+      },
+      "heating_pump": {
+        "name": "Heating pump"
+      },
+      "lighter": {
+        "name": "Lighter"
+      },
+      "mixer_pump": {
+        "name": "Mixer pump"
+      },
+      "solar_pump": {
+        "name": "Solar pump"
+      },
+      "water_heater_pump": {
+        "name": "Water heater pump"
+      }
     },
     "button": {
-      "detect_sub_devices": { "name": "Detect sub-devices" }
+      "detect_sub_devices": {
+        "name": "Detect sub-devices"
+      }
     },
     "climate": {
       "thermostat": {
@@ -64,166 +92,254 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "schedule": "Schedule",
               "airing": "Airing",
-              "party": "Party",
+              "antifreeze": "Antifreeze",
               "holidays": "Holidays",
-              "antifreeze": "Antifreeze"
+              "party": "Party",
+              "schedule": "Schedule"
             }
           }
         }
       }
     },
     "number": {
-      "target_heating_temp": { "name": "Target heating temperature" },
-      "min_heating_temp": { "name": "Minimum heating temperature" },
-      "max_heating_temp": { "name": "Maximum heating temperature" },
-      "grate_mode_temp": { "name": "Grate mode temperature" },
-      "fuzzy_logic_min_power": { "name": "Fuzzy logic minimum power" },
-      "fuzzy_logic_max_power": { "name": "Fuzzy logic maximum power" },
-      "fuel_calorific_value": { "name": "Fuel calorific value" },
-      "target_mixer_temp": { "name": "Target mixer temperature" },
-      "min_mixer_temp": { "name": "Minimum mixer temperature" },
-      "max_mixer_temp": { "name": "Maximum mixer temperature" },
-      "target_circuit_temp": { "name": "Target circuit temperature" },
-      "min_circuit_temp": { "name": "Minimum circuit temperature" },
-      "max_circuit_temp": { "name": "Maximum circuit temperature" },
-      "day_target_circuit_temp": { "name": "Day target circuit temperature" },
-      "night_target_circuit_temp": { "name": "Night target circuit temperature" }
+      "day_target_circuit_temp": {
+        "name": "Day target circuit temperature"
+      },
+      "fuel_calorific_value": {
+        "name": "Fuel calorific value"
+      },
+      "fuzzy_logic_max_power": {
+        "name": "Fuzzy logic maximum power"
+      },
+      "fuzzy_logic_min_power": {
+        "name": "Fuzzy logic minimum power"
+      },
+      "grate_mode_temp": {
+        "name": "Grate mode temperature"
+      },
+      "max_circuit_temp": {
+        "name": "Maximum circuit temperature"
+      },
+      "max_heating_temp": {
+        "name": "Maximum heating temperature"
+      },
+      "max_mixer_temp": {
+        "name": "Maximum mixer temperature"
+      },
+      "min_circuit_temp": {
+        "name": "Minimum circuit temperature"
+      },
+      "min_heating_temp": {
+        "name": "Minimum heating temperature"
+      },
+      "min_mixer_temp": {
+        "name": "Minimum mixer temperature"
+      },
+      "night_target_circuit_temp": {
+        "name": "Night target circuit temperature"
+      },
+      "target_circuit_temp": {
+        "name": "Target circuit temperature"
+      },
+      "target_heating_temp": {
+        "name": "Target heating temperature"
+      },
+      "target_mixer_temp": {
+        "name": "Target mixer temperature"
+      }
     },
     "select": {
-      "summer_mode": {
-        "name": "Summer mode",
-        "state": {
-          "on": "On",
-          "off": "Off",
-          "auto": "Auto"
-        }
-      },
       "mixer_work_mode": {
         "name": "Work mode",
         "state": {
-          "off": "Off",
-          "heating": "Heating",
           "heated_floor": "Heated floor",
+          "heating": "Heating",
+          "off": "Off",
           "pump_only": "Pump only"
+        }
+      },
+      "summer_mode": {
+        "name": "Summer mode",
+        "state": {
+          "auto": "Auto",
+          "off": "Off",
+          "on": "On"
         }
       }
     },
     "sensor": {
-      "heating_temp": { "name": "Heating temperature" },
-      "water_heater_temp": { "name": "Water heater temperature" },
-      "outside_temp": { "name": "Outside temperature" },
-      "heating_target": { "name": "Heating target temperature" },
-      "water_heater_target": { "name": "Water heater target temperature" },
-      "ecomax_state": {
-        "name": "State",
-        "state": {
-          "off": "Off",
-          "stabilization": "Stabilization",
-          "kindling": "Kindling",
-          "heating": "Heating",
-          "paused": "Paused",
-          "idle": "Idle",
-          "standby": "Standby",
-          "burning_off": "Burning Off",
-          "alert": "Alert",
-          "unknown": "Unknown"
-        },
-        "state_attributes": {
-          "numeric_state": { "name": "Numeric state" }
-        }
+      "boiler_load": {
+        "name": "Boiler load"
       },
-      "service_password": { "name": "Service password" },
+      "boiler_power": {
+        "name": "Boiler power"
+      },
+      "circuit_target_temp": {
+        "name": "Circuit target temperature"
+      },
+      "circuit_temp": {
+        "name": "Circuit temperature"
+      },
       "connected_modules": {
         "name": "Connected modules",
         "state_attributes": {
-          "panel": { "name": "Panel software version" },
-          "module_a": { "name": "Module A software version" },
-          "module_b": { "name": "Module B software version" },
-          "module_c": { "name": "Module C software version" },
-          "ecoster": { "name": "ecoSTER software version" },
-          "ecolambda": { "name": "ecoLAMBDA software version" }
+          "ecolambda": {
+            "name": "ecoLAMBDA software version"
+          },
+          "ecoster": {
+            "name": "ecoSTER software version"
+          },
+          "module_a": {
+            "name": "Module A software version"
+          },
+          "module_b": {
+            "name": "Module B software version"
+          },
+          "module_c": {
+            "name": "Module C software version"
+          },
+          "panel": {
+            "name": "Panel software version"
+          }
         }
       },
-      "uid": { "name": "UID" },
-      "oxygen_level": { "name": "Oxygen level" },
-      "boiler_power": { "name": "Boiler power" },
-      "fuel_level": { "name": "Fuel level" },
-      "fuel_consumption": { "name": "Fuel consumption" },
-      "boiler_load": { "name": "Boiler load" },
-      "fan_power": { "name": "Fan power" },
-      "flame_intensity": { "name": "Flame intensity" },
-      "feeder_temp": { "name": "Feeder temperature" },
-      "exhaust_temp": { "name": "Exhaust temperature" },
-      "return_temp": { "name": "Return temperature" },
-      "lower_buffer_temp": { "name": "Lower buffer temperature" },
-      "upper_buffer_temp": { "name": "Upper buffer temperature" },
-      "lower_solar_temp": { "name": "Lower solar temperature" },
-      "upper_solar_temp": { "name": "Upper solar temperature" },
-      "fireplace_temp": { "name": "Fireplace temperature" },
-      "mixer_temp": { "name": "Mixer temperature" },
-      "mixer_target_temp": { "name": "Mixer target temperature" },
-      "mixer_valve_opening_percentage": { "name": "Mixer valve opening percentage" },
-      "mixer_valve_state": {
-        "name": "Mixer valve state",
+      "ecomax_state": {
+        "name": "State",
         "state": {
+          "alert": "Alert",
+          "burning_off": "Burning Off",
+          "heating": "Heating",
+          "idle": "Idle",
+          "kindling": "Kindling",
           "off": "Off",
-          "closing": "Closing",
-          "opening": "Opening",
+          "paused": "Paused",
+          "stabilization": "Stabilization",
+          "standby": "Standby",
           "unknown": "Unknown"
+        },
+        "state_attributes": {
+          "numeric_state": {
+            "name": "Numeric state"
+          }
         }
       },
-      "circuit_temp": { "name": "Circuit temperature" },
-      "circuit_target_temp": { "name": "Circuit target temperature" },
+      "exhaust_temp": {
+        "name": "Exhaust temperature"
+      },
+      "fan_power": {
+        "name": "Fan power"
+      },
+      "feeder_temp": {
+        "name": "Feeder temperature"
+      },
+      "fireplace_temp": {
+        "name": "Fireplace temperature"
+      },
+      "flame_intensity": {
+        "name": "Flame intensity"
+      },
+      "fuel_consumption": {
+        "name": "Fuel consumption"
+      },
+      "fuel_level": {
+        "name": "Fuel level"
+      },
+      "heating_target": {
+        "name": "Heating target temperature"
+      },
+      "heating_temp": {
+        "name": "Heating temperature"
+      },
+      "lower_buffer_temp": {
+        "name": "Lower buffer temperature"
+      },
+      "lower_solar_temp": {
+        "name": "Lower solar temperature"
+      },
+      "mixer_target_temp": {
+        "name": "Mixer target temperature"
+      },
+      "mixer_temp": {
+        "name": "Mixer temperature"
+      },
+      "outside_temp": {
+        "name": "Outside temperature"
+      },
+      "oxygen_level": {
+        "name": "Oxygen level"
+      },
+      "return_temp": {
+        "name": "Return temperature"
+      },
+      "service_password": {
+        "name": "Service password"
+      },
       "total_fuel_burned": {
         "name": "Total fuel burned",
         "state_attributes": {
-          "burned_since_last_update": { "name": "Burned since last update, g" }
+          "burned_since_last_update": {
+            "name": "Burned since last update, g"
+          }
         }
       },
-      "ash_pan_full": { "name": "Ash pan full" }
+      "uid": {
+        "name": "UID"
+      },
+      "upper_buffer_temp": {
+        "name": "Upper buffer temperature"
+      },
+      "upper_solar_temp": {
+        "name": "Upper solar temperature"
+      },
+      "water_heater_target": {
+        "name": "Water heater target temperature"
+      },
+      "water_heater_temp": {
+        "name": "Water heater temperature"
+      }
     },
     "switch": {
-      "controller_switch": { "name": "Controller switch" },
-      "water_heater_disinfection_switch": { "name": "Water heater disinfection switch" },
-      "water_heater_pump_switch": { "name": "Water heater pump switch" },
-      "weather_control_switch": { "name": "Weather control switch" },
-      "fuzzy_logic_switch": { "name": "Fuzzy logic switch" },
-      "heating_schedule_switch": { "name": "Heating schedule switch" },
-      "water_heater_schedule_switch": { "name": "Water heater schedule switch" },
-      "enable_in_summer_mode": { "name": "Enable in summer mode" },
-      "disable_pump_on_thermostat": { "name": "Disable pump on thermostat" },
-      "enable_circuit": { "name": "Enable circuit" }
+      "controller_switch": {
+        "name": "Controller switch"
+      },
+      "disable_pump_on_thermostat": {
+        "name": "Disable pump on thermostat"
+      },
+      "enable_circuit": {
+        "name": "Enable circuit"
+      },
+      "enable_in_summer_mode": {
+        "name": "Enable in summer mode"
+      },
+      "fuzzy_logic_switch": {
+        "name": "Fuzzy logic switch"
+      },
+      "heating_schedule_switch": {
+        "name": "Heating schedule switch"
+      },
+      "water_heater_disinfection_switch": {
+        "name": "Water heater disinfection switch"
+      },
+      "water_heater_pump_switch": {
+        "name": "Water heater pump switch"
+      },
+      "water_heater_schedule_switch": {
+        "name": "Water heater schedule switch"
+      },
+      "weather_control_switch": {
+        "name": "Weather control switch"
+      }
     },
     "water_heater": {
-      "indirect_water_heater": { "name": "Indirect water heater" }
+      "indirect_water_heater": {
+        "name": "Indirect water heater"
+      }
     }
   },
   "exceptions": {
-    "invalid_parameter": {
-      "message": "Invalid parameter selected ({parameter})"
-    },
-    "invalid_parameter_value": {
-      "message": "Invalid value {value} for the {parameter} parameter"
-    },
-    "set_parameter_failed": {
-      "message": "Request to set a parameter failed ({parameter})"
-    },
-    "set_parameter_timeout": {
-      "message": "Request to set a parameter timed out ({parameter})"
-    },
-    "get_parameter_timeout": {
-      "message": "Request to get a parameter timed out ({parameter})"
-    },
-    "parameter_not_found": {
-      "message": "Requested parameter not found ({parameter})"
-    },
-    "schedule_not_found": {
-      "message": "Requested schedule not found ({schedule})"
-    },
-    "invalid_schedule_interval": {
-      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+    "connection_timeout": {
+      "message": "Timed out while trying to connect ({connection})"
     },
     "device_not_found": {
       "message": "Requested device not found ({device})"
@@ -231,26 +347,152 @@
     "device_not_ready": {
       "message": "Device not ready ({device})"
     },
-    "connection_timeout": {
-      "message": "Timed out while trying to connect ({connection})"
+    "get_parameter_timeout": {
+      "message": "Request to get a parameter timed out ({parameter})"
+    },
+    "invalid_parameter": {
+      "message": "Invalid parameter selected ({parameter})"
+    },
+    "invalid_parameter_value": {
+      "message": "Invalid value {value} for the {parameter} parameter"
+    },
+    "invalid_schedule_interval": {
+      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+    },
+    "parameter_not_found": {
+      "message": "Requested parameter not found ({parameter})"
+    },
+    "schedule_not_found": {
+      "message": "Requested schedule not found ({schedule})"
+    },
+    "set_parameter_failed": {
+      "message": "Request to set a parameter failed ({parameter})"
+    },
+    "set_parameter_timeout": {
+      "message": "Request to set a parameter timed out ({parameter})"
+    }
+  },
+  "options": {
+    "step": {
+      "entity_details": {
+        "data": {
+          "device_class": "Device class",
+          "key": "Key",
+          "mode": "Mode",
+          "name": "Name",
+          "state_class": "State class",
+          "unit_of_measurement": "Unit of measurement",
+          "update_interval": "Update interval"
+        },
+        "title": "Add a new {platform}"
+      },
+      "entity_type": {
+        "menu_options": {
+          "add_binary_sensor": "Binary sensor",
+          "add_number": "Number",
+          "add_sensor": "Sensor",
+          "add_switch": "Switch"
+        },
+        "title": "Select an entity type"
+      },
+      "init": {
+        "menu_options": {
+          "add_entity": "Add a new entity",
+          "edit_entity": "Edit/delete an entity",
+          "reload": "Reload configuration"
+        }
+      }
     }
   },
   "selector": {
-    "schedule_type": {
+    "binary_sensor_device_class": {
       "options": {
-        "heating": "Heating",
-        "water_heater": "Water heater"
+        "battery": "Battery",
+        "battery_charging": "Charging",
+        "carbon_monoxide": "Carbon monoxide",
+        "cold": "Cold",
+        "connectivity": "Connectivity",
+        "door": "Door",
+        "garage_door": "Garage door",
+        "gas": "Gas",
+        "heat": "Heat",
+        "light": "Light",
+        "lock": "Lock",
+        "moisture": "Moisture",
+        "motion": "Motion",
+        "moving": "Moving",
+        "occupancy": "Occupancy",
+        "opening": "Opening",
+        "plug": "Plug",
+        "power": "Power",
+        "presence": "Presence",
+        "problem": "Problem",
+        "running": "Running",
+        "safety": "Safety",
+        "smoke": "Smoke",
+        "sound": "Sound",
+        "update": "Update",
+        "vibration": "Vibration",
+        "window": "Window"
       }
     },
-    "weekdays": {
+    "number_device_class": {
       "options": {
-        "monday": "Monday",
-        "tuesday": "Tuesday",
-        "wednesday": "Wednesday",
-        "thursday": "Thursday",
-        "friday": "Friday",
-        "saturday": "Saturday",
-        "sunday": "Sunday"
+        "apparent_power": "Apparent power",
+        "aqi": "Air quality index",
+        "atmospheric_pressure": "Atmospheric pressure",
+        "battery": "Battery",
+        "carbon_dioxide": "Carbon dioxide",
+        "carbon_monoxide": "Carbon monoxide",
+        "current": "Current",
+        "data_rate": "Data rate",
+        "distance": "Distance",
+        "energy": "Energy",
+        "energy_storage": "Stored energy",
+        "frequency": "Frequency",
+        "gas": "Gas",
+        "humidity": "Humidity",
+        "illuminance": "Illuminance",
+        "irradiance": "Irradiance",
+        "moisture": "Moisture",
+        "nitrogen_dioxide": "Nitrogen dioxide",
+        "nitrogen_monoxide": "Nitrogen monoxide",
+        "nitrous_oxide": "Nitrous oxide",
+        "ozone": "Ozone",
+        "ph": "pH",
+        "pm1": "PM1",
+        "pm10": "PM10",
+        "pm25": "PM2.5",
+        "power": "Power",
+        "power_factor": "Power factor",
+        "precipitation": "Precipitation",
+        "precipitation_intensity": "Precipitation intensity",
+        "pressure": "Pressure",
+        "reactive_power": "Reactive power",
+        "signal_strength": "Signal strength",
+        "sound_pressure": "Sound pressure",
+        "speed": "Speed",
+        "sulphur_dioxide": "Sulphur dioxide",
+        "temperature": "Temperature",
+        "volatile_organic_compounds": "VOCs",
+        "voltage": "Voltage",
+        "volume": "Volume",
+        "volume_storage": "Stored volume",
+        "water": "Water",
+        "weight": "Weight",
+        "wind_speed": "Wind speed"
+      }
+    },
+    "number_mode": {
+      "options": {
+        "auto": "Auto",
+        "box": "Box",
+        "slider": "Slider"
+      }
+    },
+    "number_unit_of_measurement": {
+      "options": {
+        "none": "No unit of measurement"
       }
     },
     "preset": {
@@ -258,86 +500,166 @@
         "day": "Day",
         "night": "Night"
       }
+    },
+    "schedule_type": {
+      "options": {
+        "heating": "Heating",
+        "water_heater": "Water heater"
+      }
+    },
+    "sensor_device_class": {
+      "options": {
+        "apparent_power": "Apparent power",
+        "aqi": "Air quality index",
+        "atmospheric_pressure": "Atmospheric pressure",
+        "battery": "Battery",
+        "carbon_dioxide": "Carbon dioxide",
+        "carbon_monoxide": "Carbon monoxide",
+        "current": "Current",
+        "data_rate": "Data rate",
+        "date": "Date",
+        "distance": "Distance",
+        "duration": "Duration",
+        "energy": "Energy",
+        "energy_storage": "Stored energy",
+        "frequency": "Frequency",
+        "gas": "Gas",
+        "humidity": "Humidity",
+        "illuminance": "Illuminance",
+        "irradiance": "Irradiance",
+        "moisture": "Moisture",
+        "monetary": "Balance",
+        "nitrogen_dioxide": "Nitrogen dioxide",
+        "nitrogen_monoxide": "Nitrogen monoxide",
+        "nitrous_oxide": "Nitrous oxide",
+        "ozone": "Ozone",
+        "ph": "pH",
+        "pm1": "PM1",
+        "pm10": "PM10",
+        "pm25": "PM2.5",
+        "power": "Power",
+        "power_factor": "Power factor",
+        "precipitation": "Precipitation",
+        "precipitation_intensity": "Precipitation intensity",
+        "pressure": "Pressure",
+        "reactive_power": "Reactive power",
+        "signal_strength": "Signal strength",
+        "sound_pressure": "Sound pressure",
+        "speed": "Speed",
+        "sulphur_dioxide": "Sulphur dioxide",
+        "temperature": "Temperature",
+        "timestamp": "Timestamp",
+        "volatile_organic_compounds": "VOCs",
+        "voltage": "Voltage",
+        "volume": "Volume",
+        "volume_storage": "Stored volume",
+        "water": "Water",
+        "weight": "Weight",
+        "wind_speed": "Wind speed"
+      }
+    },
+    "sensor_state_class": {
+      "options": {
+        "measurement": "Measurement",
+        "total": "Total",
+        "total_increasing": "Total increasing"
+      }
+    },
+    "sensor_unit_of_measurement": {
+      "options": {
+        "none": "No unit of measurement"
+      }
+    },
+    "weekdays": {
+      "options": {
+        "friday": "Friday",
+        "monday": "Monday",
+        "saturday": "Saturday",
+        "sunday": "Sunday",
+        "thursday": "Thursday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday"
+      }
     }
   },
   "services": {
-    "get_parameter": {
-      "name": "Get parameter",
-      "description": "Gets device parameter.",
-      "fields": {
-        "name": {
-          "name": "Name",
-          "description": "Name of the parameter."
-        }
-      }
-    },
-    "set_parameter": {
-      "name": "Set parameter",
-      "description": "Sets device parameter.",
-      "fields": {
-        "name": {
-          "name": "Name",
-          "description": "Name of the parameter."
-        },
-        "value": {
-          "name": "Value",
-          "description": "A value that parameter will be set to."
-        }
-      }
-    },
-    "get_schedule": {
-      "name": "Get schedule",
-      "description": "Gets device schedule.",
-      "fields": {
-        "type": {
-          "name": "Type",
-          "description": "Type of the schedule."
-        },
-        "weekdays": {
-          "name": "Weekdays",
-          "description": "Weekdays for which to get the schedules."
-        }
-      }
-    },
-    "set_schedule": {
-      "name": "Set schedule",
-      "description": "Sets device schedule.",
-      "fields": {
-        "type": {
-          "name": "Type",
-          "description": "Type of the schedule."
-        },
-        "weekdays": {
-          "name": "Weekdays",
-          "description": "Weekdays for which to set the schedules."
-        },
-        "preset": {
-          "name": "Preset",
-          "description": "Preset at scheduled time."
-        },
-        "start": {
-          "name": "Start time",
-          "description": "Time at which scheduled state will be set."
-        },
-        "end": {
-          "name": "End time",
-          "description": "Time at which scheduled state will be cleared."
-        }
-      }
-    },
-    "reset_meter": {
-      "name": "Reset meter",
-      "description": "Resets meter value."
-    },
     "calibrate_meter": {
-      "name": "Calibrate meter",
       "description": "Allows to calibrate meter by pre-setting it's value.",
       "fields": {
         "value": {
-          "name": "Value",
-          "description": "Sets meter to this value."
+          "description": "Sets meter to this value.",
+          "name": "Value"
         }
-      }
+      },
+      "name": "Calibrate meter"
+    },
+    "get_parameter": {
+      "description": "Gets device parameter.",
+      "fields": {
+        "name": {
+          "description": "Name of the parameter.",
+          "name": "Name"
+        }
+      },
+      "name": "Get parameter"
+    },
+    "get_schedule": {
+      "description": "Gets device schedule.",
+      "fields": {
+        "type": {
+          "description": "Type of the schedule.",
+          "name": "Type"
+        },
+        "weekdays": {
+          "description": "Weekdays to get the schedule.",
+          "name": "Weekdays"
+        }
+      },
+      "name": "Get schedule"
+    },
+    "reset_meter": {
+      "description": "Resets meter value.",
+      "name": "Reset meter"
+    },
+    "set_parameter": {
+      "description": "Sets device parameter.",
+      "fields": {
+        "name": {
+          "description": "Name of the parameter.",
+          "name": "Name"
+        },
+        "value": {
+          "description": "A value that parameter will be set to.",
+          "name": "Value"
+        }
+      },
+      "name": "Set parameter"
+    },
+    "set_schedule": {
+      "description": "Sets device schedule.",
+      "fields": {
+        "end_time": {
+          "description": "Time at which scheduled state will be cleared.",
+          "name": "End time"
+        },
+        "preset": {
+          "description": "Preset at scheduled time.",
+          "name": "Preset"
+        },
+        "start_time": {
+          "description": "Time at which scheduled state will be set.",
+          "name": "Start time"
+        },
+        "type": {
+          "description": "Type of the schedule.",
+          "name": "Type"
+        },
+        "weekdays": {
+          "description": "Weekdays to set the schedule.",
+          "name": "Weekdays"
+        }
+      },
+      "name": "Set schedule"
     }
   }
 }

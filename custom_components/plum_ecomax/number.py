@@ -18,11 +18,12 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.filters import on_change
-from pyplumio.helpers.parameter import Parameter
+from pyplumio.structures.ecomax_parameters import EcomaxParameter
+from pyplumio.structures.mixer_parameters import MixerParameter
 from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
-from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, MODULE_A
+from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, Module
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class EcomaxNumberEntityDescription(NumberEntityDescription):
     product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
     mode: NumberMode = NumberMode.AUTO
-    module: str = MODULE_A
+    module: str = Module.A
 
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
@@ -43,7 +44,6 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="heating_target_temp",
         translation_key="target_heating_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -51,7 +51,6 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="min_heating_target_temp",
         translation_key="min_heating_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -59,7 +58,6 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="max_heating_target_temp",
         translation_key="max_heating_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -67,21 +65,18 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="grate_heating_temp",
         translation_key="grate_mode_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
         translation_key="fuzzy_logic_min_power",
-        native_step=1,
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
         translation_key="fuzzy_logic_max_power",
-        native_step=1,
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -89,7 +84,6 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="fuel_calorific_value",
         translation_key="fuel_calorific_value",
         mode=NumberMode.BOX,
-        native_step=0.1,
         native_unit_of_measurement=CALORIFIC_KWH_KG,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -112,8 +106,9 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self._attr_native_value = value
         self.async_write_ha_state()
 
-    async def async_update(self, value: Parameter) -> None:
+    async def async_update(self, value: EcomaxParameter) -> None:
         """Update entity state."""
+        self._attr_native_step = value.description.multiplier
         self._attr_native_value = cast(float, value.value)
         self._attr_native_min_value = cast(float, value.min_value)
         self._attr_native_max_value = cast(float, value.max_value)
@@ -132,7 +127,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="mixer_target_temp",
         translation_key="target_mixer_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -140,7 +134,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="min_target_temp",
         translation_key="min_mixer_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -148,7 +141,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="max_target_temp",
         translation_key="max_mixer_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
     ),
@@ -156,7 +148,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="circuit_target_temp",
         translation_key="target_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
     ),
@@ -164,7 +155,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="min_target_temp",
         translation_key="min_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         indexes={2, 3},
@@ -173,7 +163,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="max_target_temp",
         translation_key="max_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         indexes={2, 3},
@@ -182,7 +171,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="day_target_temp",
         translation_key="day_target_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         indexes={2, 3},
@@ -191,7 +179,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         key="night_target_temp",
         translation_key="night_target_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
-        native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         indexes={2, 3},
@@ -211,6 +198,10 @@ class MixerNumber(MixerEntity, EcomaxNumber):
         """Initialize a new mixer number."""
         self.index = index
         super().__init__(connection, description)
+
+    async def async_update(self, value: MixerParameter) -> None:
+        """Update entity state."""
+        await super().async_update(value)
 
 
 def get_by_product_type(

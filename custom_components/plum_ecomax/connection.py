@@ -25,7 +25,6 @@ from pyplumio.structures.thermostat_sensors import ATTR_THERMOSTATS_CONNECTED
 from .const import (
     ATTR_LOADED,
     ATTR_MIXERS,
-    ATTR_REGDATA,
     ATTR_SENSORS,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
@@ -44,7 +43,7 @@ from .const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    ECOMAX,
+    Device,
 )
 
 DEFAULT_TIMEOUT: Final = 15
@@ -136,7 +135,9 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Set up ecoMAX connection."""
         await self.connect()
-        device: AddressableDevice = await self.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        device: AddressableDevice = await self.get(
+            Device.ECOMAX, timeout=DEFAULT_TIMEOUT
+        )
         for required in (ATTR_LOADED, ATTR_SENSORS, ATTR_ECOMAX_PARAMETERS):
             await device.wait_for(required, timeout=DEFAULT_TIMEOUT)
 
@@ -168,20 +169,6 @@ class EcomaxConnection:
             return True
         except ValueError:
             _LOGGER.error("Timed out while trying to setup mixers.")
-            return False
-
-    async def async_setup_regdata(self) -> bool:
-        """Set up regulator data."""
-        try:
-            await self.device.request(
-                ATTR_REGDATA,
-                FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
-                retries=5,
-                timeout=DEFAULT_TIMEOUT,
-            )
-            return True
-        except ValueError:
-            _LOGGER.error("Timed out while trying to setup regulator data.")
             return False
 
     async def async_update_sub_devices(self) -> None:
