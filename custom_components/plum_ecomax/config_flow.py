@@ -5,7 +5,7 @@ import asyncio
 from collections.abc import Mapping
 from dataclasses import asdict
 import logging
-from typing import Any
+from typing import Any, cast
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_BASE
@@ -80,7 +80,7 @@ async def validate_input(
         await asyncio.wait_for(connection.connect(), timeout=DEFAULT_TIMEOUT)
     except ConnectionFailedError as connection_failure:
         raise CannotConnect from connection_failure
-    except asyncio.TimeoutError as connection_timeout:
+    except TimeoutError as connection_timeout:
         raise TimeoutConnect from connection_timeout
 
     return connection
@@ -95,12 +95,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         """Initialize a new config flow."""
         self.connection: Connection | None = None
         self.device: AddressableDevice | None = None
-        self.device_task: asyncio.Task | None = None
         self.identify_task: asyncio.Task | None = None
-        self.modules_task: asyncio.Task | None = None
+        self.discover_task: asyncio.Task | None = None
         self.init_info: dict[str, Any] = {}
 
-    async def async_step_user(self, _=None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle initial step."""
         return self.async_show_menu(
             step_id="user",
@@ -123,7 +124,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             )
             self.init_info = user_input
             self.init_info[CONF_CONNECTION_TYPE] = connection_type
-            return await self.async_step_device()
+            return await self.async_step_identify()
         except CannotConnect:
             errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
@@ -154,7 +155,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             )
             self.init_info = user_input
             self.init_info[CONF_CONNECTION_TYPE] = connection_type
-            return await self.async_step_device()
+            return await self.async_step_identify()
         except CannotConnect:
             errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
@@ -167,124 +168,66 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             step_id="serial", data_schema=STEP_SERIAL_DATA_SCHEMA, errors=errors
         )
 
-    async def async_step_device(self, _=None) -> FlowResult:
-        """Wait until the device is available."""
-
-        async def _wait_for_device() -> None:
-            try:
-                assert isinstance(self.connection, Connection)
-                self.device = await self.connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
-            finally:
-                self.hass.async_create_task(
-                    self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
-                )
-
-        if not self.device_task:
-            self.device_task = self.hass.async_create_task(_wait_for_device())
-            return self.async_show_progress(
-                step_id="device",
-                progress_action="wait_for_device",
+    async def async_step_identify(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Identify the device."""
+        if self.identify_task is None:
+            self.identify_task = self.hass.async_create_task(
+                self._async_identify_device()
             )
 
-        try:
-            await self.device_task
-        except asyncio.TimeoutError as device_not_found:
-            _LOGGER.exception(device_not_found)
-            return self.async_show_progress_done(next_step_id="device_not_found")
-        finally:
-            self.device_task = None
-
-        return self.async_show_progress_done(next_step_id="identify")
-
-    async def async_step_identify(self, _=None) -> FlowResult:
-        """Identify the device."""
-
-        async def _identify_device() -> None:
-            try:
-                assert isinstance(self.device, AddressableDevice)
-                product: ProductInfo = await self.device.get(
-                    ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
-                )
-
-                try:
-                    product_type = ProductType(product.type)
-                except ValueError as validation_failure:
-                    raise UnsupportedProduct from validation_failure
-
-                self.init_info.update(
-                    {
-                        CONF_UID: product.uid,
-                        CONF_MODEL: product.model,
-                        CONF_PRODUCT_TYPE: product_type,
-                        CONF_PRODUCT_ID: product.id,
-                    }
-                )
-
-            finally:
-                self.hass.async_create_task(
-                    self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
-                )
-
-        if not self.identify_task:
-            self.identify_task = self.hass.async_create_task(_identify_device())
+        if not self.identify_task.done():
             return self.async_show_progress(
                 step_id="identify",
                 progress_action="identify_device",
+                progress_task=self.identify_task,
             )
 
         try:
             await self.identify_task
-        except (UnsupportedProduct, asyncio.TimeoutError) as device_not_supported:
-            _LOGGER.exception(device_not_supported)
+        except TimeoutError as device_not_found:
+            _LOGGER.exception(device_not_found)
+            return self.async_show_progress_done(next_step_id="device_not_found")
+        except UnsupportedProduct:
             return self.async_show_progress_done(next_step_id="unsupported_device")
         finally:
             self.identify_task = None
 
         return self.async_show_progress_done(next_step_id="discover")
 
-    async def async_step_discover(self, _=None) -> FlowResult:
+    async def async_step_discover(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Discover connected modules."""
-
-        async def _discover_modules() -> None:
-            try:
-                assert isinstance(self.device, AddressableDevice)
-                modules: ConnectedModules = await self.device.get(
-                    ATTR_MODULES, timeout=DEFAULT_TIMEOUT
-                )
-                sub_devices = await async_get_sub_devices(self.device)
-
-                self.init_info.update(
-                    {
-                        CONF_SOFTWARE: asdict(modules),
-                        CONF_SUB_DEVICES: sub_devices,
-                    }
-                )
-            finally:
-                self.hass.async_create_task(
-                    self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
-                )
-
         await self._async_set_unique_id(self.init_info[CONF_UID])
 
-        if not self.modules_task:
-            self.modules_task = self.hass.async_create_task(_discover_modules())
+        if self.discover_task is None:
+            self.discover_task = self.hass.async_create_task(
+                self._async_discover_modules()
+            )
+
+        if not self.discover_task.done():
             return self.async_show_progress(
                 step_id="discover",
                 progress_action="discover_modules",
+                progress_task=self.discover_task,
                 description_placeholders={"model": self.init_info[CONF_MODEL]},
             )
 
         try:
-            await self.modules_task
-        except asyncio.TimeoutError as discovery_failed:
+            await self.discover_task
+        except TimeoutError as discovery_failed:
             _LOGGER.exception(discovery_failed)
             return self.async_show_progress_done(next_step_id="discovery_failed")
         finally:
-            self.modules_task = None
+            self.discover_task = None
 
         return self.async_show_progress_done(next_step_id="finish")
 
-    async def async_step_finish(self, _=None) -> FlowResult:
+    async def async_step_finish(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Finish integration config."""
         if self.connection:
             await self.connection.close()
@@ -293,17 +236,70 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             title=self.init_info[CONF_MODEL], data=self.init_info
         )
 
-    async def async_step_device_not_found(self, _=None) -> FlowResult:
+    async def async_step_device_not_found(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="no_devices_found")
 
-    async def async_step_unsupported_device(self, _=None) -> FlowResult:
+    async def async_step_unsupported_device(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="unsupported_device")
 
-    async def async_step_discovery_failed(self, _=None) -> FlowResult:
+    async def async_step_discovery_failed(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="discovery_failed")
+
+    async def _async_wait_for_device(self) -> None:
+        """Task to wait until the device is available."""
+
+    async def _async_identify_device(self) -> None:
+        """Task to identify the device."""
+        # Tell mypy that once we here, connection is not None
+        assert isinstance(self.connection, Connection)
+
+        self.device = cast(
+            AddressableDevice,
+            await self.connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT),
+        )
+        product: ProductInfo = await self.device.get(
+            ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
+        )
+
+        try:
+            product_type = ProductType(product.type)
+        except ValueError as validation_failure:
+            raise UnsupportedProduct from validation_failure
+
+        self.init_info.update(
+            {
+                CONF_UID: product.uid,
+                CONF_MODEL: product.model,
+                CONF_PRODUCT_TYPE: product_type,
+                CONF_PRODUCT_ID: product.id,
+            }
+        )
+
+    async def _async_discover_modules(self) -> None:
+        """Task to discover modules."""
+        # Tell mypy that once we here, device is not None
+        assert isinstance(self.device, AddressableDevice)
+
+        modules: ConnectedModules = await self.device.get(
+            ATTR_MODULES, timeout=DEFAULT_TIMEOUT
+        )
+        sub_devices = await async_get_sub_devices(self.device)
+
+        self.init_info.update(
+            {
+                CONF_SOFTWARE: asdict(modules),
+                CONF_SUB_DEVICES: sub_devices,
+            }
+        )
 
     async def _async_set_unique_id(self, uid: str) -> None:
         """Set the config entry's unique ID (based on UID)."""

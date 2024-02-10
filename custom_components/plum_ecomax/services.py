@@ -1,10 +1,9 @@
 """Contains Plum ecoMAX services."""
 from __future__ import annotations
 
-import asyncio
 import datetime as dt
 import logging
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -118,7 +117,9 @@ def async_extract_target_device(
     for device_type in (ATTR_MIXERS, ATTR_THERMOSTATS):
         if f"-{device_type[:-1]}-" in identifier:
             index = int(identifier.split("-", 3).pop())
-            sub_devices = connection.device.get_nowait(device_type, {})
+            sub_devices: dict[int, Device] = connection.device.get_nowait(
+                device_type, {}
+            )
             try:
                 return sub_devices[index]
             except KeyError:
@@ -151,7 +152,7 @@ async def async_get_device_parameter(
     """Get device parameter."""
     try:
         parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         raise HomeAssistantError(
             translation_domain=DOMAIN,
             translation_key="get_parameter_timeout",
@@ -232,7 +233,7 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
             translation_key="invalid_parameter_value",
             translation_placeholders={"parameter": name, "value": value},
         ) from e
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         raise HomeAssistantError(
             str(e),
             translation_domain=DOMAIN,
@@ -274,7 +275,9 @@ def async_setup_set_parameter_service(
     )
 
 
-def async_schedule_day_to_dict(schedule_day: ScheduleDay):
+def async_schedule_day_to_dict(
+    schedule_day: ScheduleDay,
+) -> dict[str, Literal["day", "night"]]:
     """Format the schedule day as a dictionary."""
     return {
         (START_OF_DAY_DT + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
